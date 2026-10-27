@@ -5,13 +5,7 @@ Statistical analysis of CAD/JPY exchange rates and macroeconomic indicators usin
 
 This project examines the relationships between the CAD/JPY exchange rate and macroeconomic indicators in Canada and Japan from 2004 to 2023 using R.
 
-## 2. Data
-- **Yahoo Finance:** CAD/JPY exchange rates
-- **World Bank (WDI):** GDP, inflation rates, and unemployment rates
-
-The dataset contains 20 annual observations.
-
-## 3. Project Structure
+## 2. Project Structure
 
 | **File** | **Description** |
 | --- | --- |
@@ -20,23 +14,33 @@ The dataset contains 20 annual observations.
 | [03 Regression Modeling](cad_jpy_03_regression_modeling.Rmd) | Linear regression, AIC comparison, and model diagnostics |
 | [Processed Dataset](processed_data.csv) | Annual exchange rates and macroeconomic indicators |
 
-## 4. How to Run
+# 3. Data
+- **Yahoo Finance:** CAD/JPY exchange rates
+- **World Bank (WDI):** GDP, inflation rates, and unemployment rates
 
-1. Install the required R packages.
-2. Run `cad_jpy_01_data_preprocessing.Rmd` to generate `processed_data.csv`.
-3. Run `cad_jpy_02_EDA.Rmd` and `cad_jpy_03_regression_modeling.Rmd`.
+The dataset contains 20 annual observations.
 
-## 5. Key Findings
+## 4. Key Findings
 
 - Japan's GDP showed a strong negative correlation with CAD/JPY.
 - Inflation rates in both countries were positively correlated with CAD/JPY.
 - Canada's unemployment rate showed a negative correlation with CAD/JPY.
 - The selected multiple regression model used Japan's GDP, inflation rate, and unemployment rate (**R² = 0.6923**).
 
-## 6. Limitations
+## 5. Limitations
 
-The small sample size and potential outliers limit the reliability of the results. The analysis identifies associations rather than causal relationships.
+The small sample size and potential outliers limit the reliability of the results. The analysis identifies associations rather than causal relationships, and predictive performance was not evaluated on unseen data.
 
-## 7. Tools
+## 6. Tools
 
-R / tidyverse / quantmod / WDI / ggplot2
+R / R Markdown / tidyverse / ggplot2 / quantmod / WDI
+
+## 7. How to Run
+
+1. Install the required R packages.
+2. Run `cad_jpy_01_data_preprocessing.Rmd` to generate `processed_data.csv`.
+3. Run `cad_jpy_02_EDA.Rmd` and `cad_jpy_03_regression_modeling.Rmd`.
+
+
+
+ 
