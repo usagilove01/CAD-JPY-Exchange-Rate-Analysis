@@ -1,0 +1,130 @@
+---
+title: "cad_jpy_01_data_preprocessing"
+author: "usagilove01"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+# Set timezone
+Sys.setenv(TZ = "Asia/Tokyo")
+```
+
+
+# 1. Introduction
+This analysis collects and preprocesses CAD/JPY exchange rates and macroeconomic data from Canada and Japan.
+
+
+
+# 2. Libraries
+```{r libraries}
+library(quantmod)
+library(WDI)
+library(tidyverse)
+```
+
+
+
+# 3. Data Collection
+## 3.1 CAD/JPY Exchange Rate
+```{r exchange_rate_data}
+# Obtain CAD/JPY exchange rates
+getSymbols(
+  "CADJPY=X",
+  src = "yahoo",
+  from = "2004-01-01",
+  to = "2024-01-01"
+)
+
+
+# Remove missing values
+cad_jpy <- na.omit(`CADJPY=X`)
+
+
+# Calculate annual average exchange rates
+cad_jpy_data <- data.frame(
+  date = index(cad_jpy),
+  cad_jpy = as.numeric(cad_jpy[, "CADJPY=X.Close"])
+) %>%
+  mutate(year = as.numeric(format(date, "%Y"))) %>%
+  group_by(year) %>%
+  summarise(
+    cad_jpy = mean(cad_jpy, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+
+# Keep data from 2004 to 2023
+cad_jpy_data <- cad_jpy_data %>%
+  filter(year <= 2023)
+```
+
+
+## 3.2 Macroeconomic Data
+```{r macroeconomic_data}
+# Obtain macroeconomic data from WDI
+macro_data <- WDI(
+  country = c("CA", "JP"),
+  indicator = c(
+    "NY.GDP.MKTP.CD",  # GDP
+    "FP.CPI.TOTL.ZG",  # Inflation rate
+    "SL.UEM.TOTL.ZS"   # Unemployment rate
+  ),
+  start = 2004,
+  end = 2023
+)
+```
+
+
+## 3.3 Organize Macroeconomic Data
+```{r organize_macro_data}
+# Select and rename variables
+wide_macro_data <- macro_data %>%
+  select(
+    year,
+    iso2c,
+    gdp = NY.GDP.MKTP.CD,
+    infl = FP.CPI.TOTL.ZG,
+    unemp = SL.UEM.TOTL.ZS
+  ) %>%
+  pivot_wider(
+    names_from = iso2c,
+    values_from = c(gdp, infl, unemp)
+  ) %>%
+  arrange(year)
+```
+
+
+# 4. Data Integration
+```{r data_integration}
+# Merge exchange rates and macroeconomic indicators
+df <- left_join(
+  wide_macro_data,
+  cad_jpy_data,
+  by = "year"
+)
+
+
+# Check missing values
+colSums(is.na(df))
+```
+
+
+# 5. Export Processed Data
+```{r export_data}
+# Export processed dataset
+write.csv(
+  df,
+  "processed_data.csv",
+  row.names = FALSE
+)
+```

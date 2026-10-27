@@ -1,0 +1,181 @@
+---
+title: "cad_jpy_02_EDA"
+author: "usagilove01"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+# Set timezone
+Sys.setenv(TZ = "Asia/Tokyo")
+```
+
+
+# 1. Introduction
+This analysis explores the relationships between the CAD/JPY exchange rate and macroeconomic indicators in Canada and Japan from 2004 to 2023.
+
+
+# 2. Libraries
+```{r libraries}
+library(tidyverse)
+library(gridExtra)
+library(grid)
+```
+
+
+
+# 3. Load Data
+```{r load_data}
+# Load processed data
+df <- read.csv("processed_data.csv")
+```
+
+
+
+# 4. Scatter Plot Analysis
+## 4.1 GDP vs CAD/JPY
+```{r gdp_scatter_plots}
+# Canada
+gdp_plot_ca <- ggplot(df, aes(x = gdp_CA / 1e12, y = cad_jpy)) +
+  geom_point(color = "red") +
+  geom_smooth(method = "lm", color = "green") +
+  labs(
+    title = "Canada",
+    x = "GDP (Trillion USD)",
+    y = "CAD/JPY Exchange Rate"
+  ) +
+  theme_minimal()
+
+
+# Japan
+gdp_plot_jp <- ggplot(df, aes(x = gdp_JP / 1e12, y = cad_jpy)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "green") +
+  labs(
+    title = "Japan",
+    x = "GDP (Trillion USD)",
+    y = "CAD/JPY Exchange Rate"
+  ) +
+  theme_minimal()
+
+
+# Display both plots
+grid.arrange(
+  gdp_plot_ca,
+  gdp_plot_jp,
+  ncol = 2,
+  top = "GDP vs CAD/JPY"
+)
+```
+Japan's GDP shows a negative relationship with the CAD/JPY exchange rate, while Canada's GDP shows a weaker relationship.
+
+
+## 4.2 Inflation Rate vs CAD/JPY
+```{r inflation_scatter_plots}
+# Canada
+infl_plot_ca <- ggplot(df, aes(x = infl_CA, y = cad_jpy)) +
+  geom_point(color = "red") +
+  geom_smooth(method = "lm", color = "green") +
+  labs(
+    title = "Canada",
+    x = "Inflation Rate (%)",
+    y = "CAD/JPY Exchange Rate"
+  ) +
+  theme_minimal()
+
+
+# Japan
+infl_plot_jp <- ggplot(df, aes(x = infl_JP, y = cad_jpy)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "green") +
+  labs(
+    title = "Japan",
+    x = "Inflation Rate (%)",
+    y = "CAD/JPY Exchange Rate"
+  ) +
+  theme_minimal()
+
+
+# Display both plots
+grid.arrange(
+  infl_plot_ca,
+  infl_plot_jp,
+  ncol = 2,
+  top = "Inflation Rate vs CAD/JPY"
+)
+```
+Both Canada and Japan show positive relationships between inflation rates and the CAD/JPY exchange rate.
+
+
+## 4.3 Unemployment Rate vs CAD/JPY
+```{r unemployment_scatter_plots}
+# Canada
+unemp_plot_ca <- ggplot(df, aes(x = unemp_CA, y = cad_jpy)) +
+  geom_point(color = "red") +
+  geom_smooth(method = "lm", color = "green") +
+  labs(
+    title = "Canada",
+    x = "Unemployment Rate (%)",
+    y = "CAD/JPY Exchange Rate"
+  ) +
+  theme_minimal()
+
+
+# Japan
+unemp_plot_jp <- ggplot(df, aes(x = unemp_JP, y = cad_jpy)) +
+  geom_point(color = "blue") +
+  geom_smooth(method = "lm", color = "green") +
+  labs(
+    title = "Japan",
+    x = "Unemployment Rate (%)",
+    y = "CAD/JPY Exchange Rate"
+  ) +
+  theme_minimal()
+
+
+# Display both plots
+grid.arrange(
+  unemp_plot_ca,
+  unemp_plot_jp,
+  ncol = 2,
+  top = "Unemployment Rate vs CAD/JPY"
+)
+```
+Canada's unemployment rate shows a negative relationship with the CAD/JPY exchange rate, while Japan's unemployment rate shows a weaker relationship.
+
+
+# 5. Correlation Analysis
+```{r correlation_analysis}
+# Calculate Pearson correlation coefficients
+cor_results <- data.frame(
+  Indicator = c("GDP", "Inflation Rate", "Unemployment Rate"),
+  Canada = c(
+    cor(df$gdp_CA, df$cad_jpy),
+    cor(df$infl_CA, df$cad_jpy),
+    cor(df$unemp_CA, df$cad_jpy)
+  ),
+  Japan = c(
+    cor(df$gdp_JP, df$cad_jpy),
+    cor(df$infl_JP, df$cad_jpy),
+    cor(df$unemp_JP, df$cad_jpy)
+  )
+)
+
+
+# Display correlation results
+knitr::kable(cor_results, digits = 3)
+```
+
+
+
+# 6. Summary
+Japan's GDP and Canada's unemployment rate show negative correlations with CAD/JPY, while inflation rates in both countries show positive correlations. Canada's GDP and Japan's unemployment rate show weak correlations.

@@ -1,0 +1,214 @@
+---
+title: "cad_jpy_03_regression_modeling"
+author: "usagilove01"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+# Set timezone
+Sys.setenv(TZ = "Asia/Tokyo")
+```
+
+
+# 1. Introduction
+This analysis uses linear regression to examine the relationships between the CAD/JPY exchange rate and macroeconomic indicators in Canada and Japan.
+
+
+# 2. Libraries
+```{r libraries}
+library(tidyverse)
+library(knitr)
+```
+
+
+# 3. Data Loading
+```{r load_data}
+# Load processed data
+df <- read.csv("processed_data.csv")
+```
+
+
+# 4. Simple Linear Regression
+```{r simple_linear_regression}
+# GDP
+model_gdp_ca <- lm(cad_jpy ~ gdp_CA, data = df)
+model_gdp_jp <- lm(cad_jpy ~ gdp_JP, data = df)
+
+
+# Inflation rate
+model_infl_ca <- lm(cad_jpy ~ infl_CA, data = df)
+model_infl_jp <- lm(cad_jpy ~ infl_JP, data = df)
+
+
+# Unemployment rate
+model_unemp_ca <- lm(cad_jpy ~ unemp_CA, data = df)
+model_unemp_jp <- lm(cad_jpy ~ unemp_JP, data = df)
+
+
+# Combine models
+simple_models <- list(
+  "GDP - Canada" = model_gdp_ca,
+  "GDP - Japan" = model_gdp_jp,
+  "Inflation - Canada" = model_infl_ca,
+  "Inflation - Japan" = model_infl_jp,
+  "Unemployment - Canada" = model_unemp_ca,
+  "Unemployment - Japan" = model_unemp_jp
+)
+
+
+# Summarize regression results
+simple_results <- data.frame(
+  Model = names(simple_models),
+  R_Squared = sapply(simple_models, function(m) summary(m)$r.squared),
+  P_Value = sapply(simple_models, function(m) summary(m)$coefficients[2, 4])
+)
+
+
+knitr::kable(simple_results, digits = 4, row.names = FALSE)
+```
+
+
+
+# 5. Multiple Linear Regression
+```{r multiple_linear_regression}
+# Canada
+model_ca <- lm(
+  cad_jpy ~ gdp_CA + infl_CA + unemp_CA,
+  data = df
+)
+
+
+# Japan
+model_jp <- lm(
+  cad_jpy ~ gdp_JP + infl_JP + unemp_JP,
+  data = df
+)
+
+
+# Compare model performance
+multiple_models <- list(
+  "Canada" = model_ca,
+  "Japan" = model_jp
+)
+
+multiple_results <- data.frame(
+  Model = names(multiple_models),
+  R_Squared = sapply(multiple_models, function(m) summary(m)$r.squared),
+  Adjusted_R_Squared = sapply(multiple_models, function(m) summary(m)$adj.r.squared),
+  P_Value = sapply(multiple_models, function(m) {
+    f <- summary(m)$fstatistic
+    pf(f[1], f[2], f[3], lower.tail = FALSE)
+  })
+)
+
+
+knitr::kable(multiple_results, digits = 4, row.names = FALSE)
+```
+
+
+# 6. Model Comparison
+```{r model_comparison}
+# Candidate models
+model_1 <- model_ca
+model_2 <- model_jp
+
+model_3 <- lm(
+  cad_jpy ~ gdp_CA + infl_CA + unemp_CA +
+    gdp_JP + infl_JP + unemp_JP,
+  data = df
+)
+
+model_4 <- lm(
+  cad_jpy ~ gdp_JP + infl_JP + infl_CA + unemp_CA,
+  data = df
+)
+
+model_5 <- lm(
+  cad_jpy ~ gdp_JP + infl_JP + unemp_CA,
+  data = df
+)
+
+model_6 <- lm(
+  cad_jpy ~ gdp_JP + infl_JP + unemp_JP + unemp_CA,
+  data = df
+)
+
+
+# Compare models using AIC
+aic_results <- AIC(
+  model_1, model_2, model_3,
+  model_4, model_5, model_6
+)
+
+
+knitr::kable(aic_results, digits = 3)
+```
+
+
+# 7. Final Model
+Although the six-variable model achieved the lowest AIC, the Japan-only model was selected to prioritize simplicity given the small sample size of 20 annual observations.
+## 7.1 Regression Results
+```{r final_model}
+# Select the final model
+final_model <- model_2
+
+
+# Display regression results
+summary(final_model)
+```
+
+
+## 7.2 Actual vs Fitted CAD/JPY
+```{r actual_vs_fitted}
+# Calculate fitted values
+df$fitted_cad_jpy <- fitted(final_model)
+
+# Compare actual and fitted exchange rates
+ggplot(df, aes(x = year)) +
+  geom_line(aes(y = cad_jpy, color = "Actual"), linewidth = 1) +
+  geom_line(
+    aes(y = fitted_cad_jpy, color = "Fitted"),
+    linewidth = 1,
+    linetype = "dashed"
+  ) +
+  labs(
+    title = "Actual vs Fitted CAD/JPY Exchange Rate",
+    x = "Year",
+    y = "CAD/JPY",
+    color = NULL
+  ) +
+  scale_color_manual(
+    values = c("Actual" = "gray", "Fitted" = "green")
+  ) +
+  theme_minimal()
+```
+
+
+## 7.3 Model Diagnostics
+```{r model_diagnostics, fig.width=9, fig.height=7}
+# Diagnostic plots
+par(mfrow = c(2, 2))
+
+plot(final_model)
+
+
+# Reset plot layout
+par(mfrow = c(1, 1))
+```
+
+
+
+# 8. Summary
+Japan's GDP, inflation rate, and unemployment rate were statistically significant in the final multiple regression model, which explained approximately 69.2% of the variation in CAD/JPY exchange rates (R² = 0.6923).
+
+Although the six-variable model had the lowest AIC, the Japan-only model was selected for its simplicity. The small sample size and potential outliers limit the reliability of the results.
