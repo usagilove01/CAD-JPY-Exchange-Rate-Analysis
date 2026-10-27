@@ -31,7 +31,7 @@ The dataset contains 20 annual observations.
 
 The small sample size and potential outliers limit the reliability of the results. The analysis identifies associations rather than causal relationships, and predictive performance was not evaluated on unseen data.
 
-## 6. Tools
+## 6. Tools and Technologies
 
 R / R Markdown / tidyverse / ggplot2 / quantmod / WDI
 
