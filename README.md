@@ -12,9 +12,8 @@ This project examines the relationships between the CAD/JPY exchange rate and ma
 | [01 Data Preprocessing](cad_jpy_01_data_preprocessing.Rmd) | Data collection, cleaning, and integration |
 | [02 EDA](cad_jpy_02_EDA.Rmd) | Exploratory data analysis and correlation analysis |
 | [03 Regression Modeling](cad_jpy_03_regression_modeling.Rmd) | Linear regression, AIC comparison, and model diagnostics |
-| [Processed Dataset](processed_data.csv) | Annual exchange rates and macroeconomic indicators |
 
-# 3. Data
+## 3. Data
 - **Yahoo Finance:** CAD/JPY exchange rates
 - **World Bank (WDI):** GDP, inflation rates, and unemployment rates
 
